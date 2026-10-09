@@ -1,0 +1,80 @@
+/*
+Core measures for the source-table model visible in the Power BI screenshots.
+The original query names are used here (race_results, qualifying_results, races and DimDate).
+Keep position/status definitions explicit: a blank position is not the same as a DNF label.
+*/
+
+Total Points =
+SUM ( race_results[points] )
+
+Race Wins =
+CALCULATE (
+    DISTINCTCOUNT ( race_results[raceId] ),
+    race_results[positionNumber] = 1
+)
+
+Podiums =
+CALCULATE (
+    DISTINCTCOUNT ( race_results[raceId] ),
+    FILTER (
+        race_results,
+        NOT ISBLANK ( race_results[positionNumber] )
+            && race_results[positionNumber] >= 1
+            && race_results[positionNumber] <= 3
+    )
+)
+
+Pole Positions =
+CALCULATE (
+    DISTINCTCOUNT ( race_results[raceId] ),
+    race_results[polePosition] = TRUE ()
+)
+
+Fastest Laps =
+CALCULATE (
+    DISTINCTCOUNT ( race_results[raceId] ),
+    race_results[fastestLap] = TRUE ()
+)
+
+Result Entries =
+COUNTROWS ( race_results )
+
+Non Finish Count =
+CALCULATE (
+    COUNTROWS ( race_results ),
+    ISBLANK ( race_results[positionNumber] )
+)
+
+Explicit DNF Count =
+CALCULATE (
+    COUNTROWS ( race_results ),
+    race_results[positionText] = "DNF"
+)
+
+Explicit DNF Rate =
+DIVIDE ( [Explicit DNF Count], [Result Entries], 0 )
+
+/* Calculated column on race_results. Positive values mean positions gained. */
+Position Gain =
+VAR GridPosition = race_results[gridPositionNumber]
+VAR FinishPosition = race_results[positionNumber]
+RETURN
+    IF (
+        NOT ISBLANK ( GridPosition ) && NOT ISBLANK ( FinishPosition ),
+        GridPosition - FinishPosition
+    )
+
+Average Position Gain =
+AVERAGE ( race_results[Position Gain] )
+
+Previous Year Points =
+CALCULATE (
+    [Total Points],
+    SAMEPERIODLASTYEAR ( DimDate[Date] )
+)
+
+YoY Points Change =
+[Total Points] - [Previous Year Points]
+
+YoY Points Change % =
+DIVIDE ( [YoY Points Change], [Previous Year Points] )

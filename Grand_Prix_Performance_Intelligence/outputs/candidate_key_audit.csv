@@ -1,0 +1,7 @@
+CandidateKey,Rows,DuplicateExtraRows,RowsInDuplicateGroups,Status
+"race_results (raceId, driverId)",27467,95,184,REVIEW; preserve and inspect before deduplicating
+"qualifying_results (raceId, driverId)",26888,1,2,REVIEW; preserve and inspect before deduplicating
+"fastest_laps (raceId, driverId)",17020,0,0,PASS
+"pit_stops (raceId, driverId, stop)",22308,0,0,PASS
+"season_driver_standings (year, driverId)",1680,0,0,PASS
+"season_constructor_standings (year, constructorId)",721,23,44,REVIEW; preserve and inspect before deduplicating

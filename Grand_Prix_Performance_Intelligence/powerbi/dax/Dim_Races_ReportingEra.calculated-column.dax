@@ -1,0 +1,16 @@
+/* Calculated column on Dim_Races.
+   These are working analytical buckets, not asserted official scoring-regulation boundaries.
+   Validate against a primary regulation source before using the phrase "official scoring era". */
+Reporting Era =
+VAR Y = Dim_Races[Year]
+RETURN
+    SWITCH (
+        TRUE (),
+        Y <= 1960, "1950–1960",
+        Y <= 1990, "1961–1990",
+        Y <= 2002, "1991–2002",
+        Y <= 2009, "2003–2009",
+        Y <= 2018, "2010–2018",
+        Y <= 2024, "2019–2024",
+        "2025–2026 (partial snapshot)"
+    )

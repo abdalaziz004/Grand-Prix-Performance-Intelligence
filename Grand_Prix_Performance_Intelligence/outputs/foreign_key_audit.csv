@@ -1,0 +1,11 @@
+Check,RowsChecked,Exceptions,Status
+race_results.driverId -> drivers.id,27467,0,PASS
+race_results.constructorId -> constructors.id,27467,0,PASS
+qualifying_results.driverId -> drivers.id,26888,0,PASS
+qualifying_results.constructorId -> constructors.id,26888,0,PASS
+fastest_laps.driverId -> drivers.id,17020,0,PASS
+fastest_laps.constructorId -> constructors.id,17020,0,PASS
+pit_stops.driverId -> drivers.id,22308,0,PASS
+pit_stops.constructorId -> constructors.id,22308,0,PASS
+races.circuitId -> circuits.id,1171,0,PASS
+races.grandPrixId -> grands_prix.id,1171,0,PASS

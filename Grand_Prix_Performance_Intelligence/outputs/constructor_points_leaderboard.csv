@@ -1,0 +1,187 @@
+constructorId,name,RaceResultPoints
+ferrari,Ferrari,11625.77
+mercedes,Mercedes,8422.64
+red-bull,Red Bull,8192.0
+mclaren,McLaren,8071.5
+williams,Williams,3770.0
+renault,Renault,1777.0
+lotus,Lotus,1514.0
+force-india,Force India,1098.0
+brabham,Brabham,983.0
+benetton,Benetton,861.5
+tyrrell,Tyrrell,711.0
+lotus-f1,Lotus,706.0
+alpine,Alpine,574.0
+aston-martin,Aston Martin,573.0
+sauber,Sauber,557.0
+brm,BRM,537.5
+toro-rosso,Toro Rosso,500.0
+cooper,Cooper,494.5
+ligier,Ligier,388.0
+haas,Haas,386.0
+alfa-romeo,Alfa Romeo,361.0
+maserati,Maserati,313.42
+bmw-sauber,BMW Sauber,308.0
+alphatauri,AlphaTauri,306.0
+jordan,Jordan,291.0
+racing-point,Racing Point,283.0
+toyota,Toyota,278.5
+bar,BAR,227.0
+march,March,185.0
+matra,Matra,184.0
+brawn,Brawn,172.0
+honda,Honda,156.0
+arrows,Arrows,142.0
+racing-bulls,Racing Bulls,129.0
+kurtis-kraft,Kurtis Kraft,127.0
+vanwall,Vanwall,108.0
+wolf,Wolf,79.0
+kick-sauber,Kick Sauber,74.0
+shadow,Shadow,68.5
+surtees,Surtees,54.0
+porsche,Porsche,50.0
+jaguar,Jaguar,49.0
+hesketh,Hesketh,48.0
+stewart,Stewart,47.0
+fittipaldi,Fittipaldi,44.0
+epperly,Epperly,44.0
+lola,Lola,43.0
+rb,RB,40.0
+minardi,Minardi,38.0
+watson,Watson,36.0
+prost,Prost,35.0
+gordini,Gordini,27.14
+toleman,Toleman,26.0
+talbot-lago,Talbot-Lago,25.0
+footwork,Footwork,25.0
+kuzma,Kuzma,24.0
+penske,Penske,23.0
+ensign,Ensign,19.0
+connaught,Connaught,17.0
+eagle,Eagle,17.0
+dallara,Dallara,15.0
+brp,BRP,11.0
+lesovsky,Lesovsky,10.0
+deidt,Deidt,10.0
+lancia,Lancia,9.0
+leyton-house,Leyton House,8.0
+ats-wheels,ATS,7.0
+phillips,Phillips,7.0
+iso-marlboro,Iso-Marlboro,6.0
+rial,Rial,6.0
+onyx,Onyx,6.0
+frank-williams-racing-cars,Frank Williams Racing Cars,6.0
+parnelli,Parnelli,6.0
+osella,Osella,5.0
+larrousse,Larrousse,5.0
+super-aguri,Super Aguri,4.0
+sherman,Sherman,3.0
+simca-gordini,Simca-Gordini,3.0
+frazer-nash,Frazer-Nash,3.0
+hill,Hill,3.0
+ags,AGS,2.0
+audi,Audi,2.0
+hwm,HWM,2.0
+marussia,Marussia,2.0
+zakspeed,Zakspeed,2.0
+schroeder,Schroeder,2.0
+theodore,Theodore,2.0
+manor,Manor,1.0
+spyker,Spyker,1.0
+tecno,Tecno,1.0
+venturi,Venturi,1.0
+trevis,Trevis,1.0
+adams,Adams,
+afm,AFM,
+alfa-special,Alfa Special,
+alta,Alta,
+amon,Amon,
+andrea-moda,Andrea Moda,
+apollon,Apollon,
+arzani-volpini,Arzani-Volpini,
+aston-butterworth,Aston Butterworth,
+ats,ATS,
+balsa,Balsa,
+behra-porsche,Behra-Porsche,
+bellasi,Bellasi,
+bmw,BMW,
+boro,Boro,
+bromme,Bromme,
+bugatti,Bugatti,
+cadillac,Cadillac,
+caterham,Caterham,
+christensen,Christensen,
+cisitalia,Cisitalia,
+coloni,Coloni,
+connew,Connew,
+de-tomaso,De Tomaso,
+del-roy,Del Roy,
+derrington-francis,Derrington-Francis,
+dunn,Dunn,
+eifelland,Eifelland,
+elder,Elder,
+emeryson,Emeryson,
+emw,EMW,
+enb,ENB,
+era,ERA,
+eurobrun,EuroBrun,
+ewing,Ewing,
+ferguson,Ferguson,
+fondmetal,Fondmetal,
+forti,Forti,
+fry,Fry,
+gilby,Gilby,
+greifzu,Greifzu,
+hall,Hall,
+heck,Heck,
+hrt,HRT,
+jbw,JBW,
+kauhsen,Kauhsen,
+klenk,Klenk,
+kojima,Kojima,
+krakau,Krakau,
+langley,Langley,
+lds,LDS,
+lec,LEC,
+life,Life,
+lotus-racing,Lotus Racing,
+lyncar,Lyncar,
+maki,Maki,
+marchese,Marchese,
+martini,Martini,
+mcguire,McGuire,
+merzario,Merzario,
+meskowski,Meskowski,
+midland,Midland,
+modena,Modena,
+moore,Moore,
+nacke,Nacke,
+nichels,Nichels,
+olson,Olson,
+osca,O.S.C.A.,
+pacific,Pacific,
+pankratz,Pankratz,
+pawl,Pawl,
+politoys,Politoys,
+protos,Protos,
+rae,Rae,
+ram,RAM,
+rebaque,Rebaque,
+reif,Reif,
+scarab,Scarab,
+scirocco,Scirocco,
+shannon,Shannon,
+simtek,Simtek,
+snowberger,Snowberger,
+spirit,Spirit,
+stebro,Stebro,
+stevens,Stevens,
+sutton,Sutton,
+tec-mec,Tec-Mec,
+token,Token,
+trojan,Trojan,
+turner,Turner,
+veritas,Veritas,
+virgin,Virgin,
+wetteroth,Wetteroth,
+wolf-williams,Wolf-Williams,

@@ -1,0 +1,349 @@
+/*
+Grand Prix Performance Intelligence — DAX library
+
+Assumptions:
+- These measures use the Dim_/Fact_ table names in docs/DATA_MODEL.md.
+- Dim_Date[Date] is marked as the model Date Table.
+- Dimensions filter facts in one direction only.
+- Use Dim_Date[Year] for race-level time intelligence and Dim_Season[Year] for season standings.
+- [Total Wins] counts distinct race IDs in the current driver/constructor context; [Winning Result Rows] is the raw winning-row count.
+- Core measures using the source table names visible in the working screenshots are also provided in core_measures_source_model.dax.
+*/
+
+/* D-01 — Total Race Starts (assignment name; on a report, label as Result Entries) */
+Total Race Starts =
+COUNTROWS ( Fact_RaceResults )
+
+/* Additional — explicit source-row count for winning records */
+Winning Result Rows =
+CALCULATE (
+    COUNTROWS ( Fact_RaceResults ),
+    KEEPFILTERS ( Fact_RaceResults[positionNumber] = 1 )
+)
+
+/* D-02 — Total Wins: unique Grand Prix events with a winning row in the current entity context.
+   This intentionally differs from a raw winning-row count to avoid counting the same event twice
+   in historical shared-car result cases. Validate per driver and constructor against QA totals. */
+Total Wins =
+CALCULATE (
+    DISTINCTCOUNT ( Fact_RaceResults[raceId] ),
+    KEEPFILTERS ( Fact_RaceResults[positionNumber] = 1 )
+)
+
+/* D-03 — Total Championship Points. Historical cross-era comparisons require a caveat. */
+Total Championship Points =
+SUM ( Fact_RaceResults[points] )
+
+/* D-04 — distinct drivers represented in race-result rows; expected from this snapshot: 860, not 917. */
+Distinct Drivers =
+DISTINCTCOUNT ( Fact_RaceResults[driverId] )
+
+/* Additional — directory size versus fact coverage are different concepts. */
+Drivers in Directory =
+DISTINCTCOUNT ( Dim_Drivers[DriverId] )
+
+Drivers with Race Results =
+DISTINCTCOUNT ( Fact_RaceResults[driverId] )
+
+/* D-05 — Win Rate % */
+Win Rate % =
+DIVIDE ( [Total Wins], [Total Race Starts], 0 )
+
+/* D-06 — blank finish position rate. Label as Non-Classified Entry Rate, not pure DNF. */
+Non-Classified Entry Rate =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( Fact_RaceResults ), ISBLANK ( Fact_RaceResults[positionNumber] ) ),
+    [Total Race Starts],
+    0
+)
+
+/* Additional — literal DNF by source status text. */
+Explicit DNF Count =
+CALCULATE (
+    COUNTROWS ( Fact_RaceResults ),
+    Fact_RaceResults[positionText] = "DNF"
+)
+
+Explicit DNF Rate =
+DIVIDE ( [Explicit DNF Count], [Total Race Starts], 0 )
+
+/* D-07 — top-three finishes; blank finishes are explicitly excluded. */
+Podium Count =
+CALCULATE (
+    COUNTROWS ( Fact_RaceResults ),
+    FILTER (
+        Fact_RaceResults,
+        NOT ISBLANK ( Fact_RaceResults[positionNumber] )
+            && Fact_RaceResults[positionNumber] >= 1
+            && Fact_RaceResults[positionNumber] <= 3
+    )
+)
+
+/* D-08 — positive values mean positions gained (grid position minus finish position). */
+Average Grid-to-Finish Position Change =
+AVERAGEX (
+    FILTER (
+        Fact_RaceResults,
+        NOT ISBLANK ( Fact_RaceResults[gridPositionNumber] )
+            && NOT ISBLANK ( Fact_RaceResults[positionNumber] )
+    ),
+    Fact_RaceResults[gridPositionNumber] - Fact_RaceResults[positionNumber]
+)
+
+/* D-09 — selected-season wins. No special DAX: the model's active date path supplies context. */
+Wins in Selected Season =
+[Total Wins]
+
+/* D-10 — prior season wins, based on the marked Dim_Date table. */
+Prior Season Wins =
+CALCULATE (
+    [Total Wins],
+    SAMEPERIODLASTYEAR ( Dim_Date[Date] )
+)
+
+/* D-11 — year-over-year change; blank when no prior-year denominator exists. */
+Wins YoY % Change =
+VAR PriorValue = [Prior Season Wins]
+RETURN
+    IF (
+        ISBLANK ( PriorValue ),
+        BLANK (),
+        DIVIDE ( [Total Wins] - PriorValue, PriorValue )
+    )
+
+/* D-12 — running total. Removes Date filters only; driver/constructor filters remain in context. */
+Running Total Championship Points =
+VAR CurrentDate = MAX ( Dim_Date[Date] )
+RETURN
+    CALCULATE (
+        [Total Championship Points],
+        FILTER ( ALL ( Dim_Date ), Dim_Date[Date] <= CurrentDate )
+    )
+
+/* D-13 — dense rank, respecting selections that remain in the report context. */
+Rank by Total Wins =
+RANKX (
+    ALLSELECTED ( Dim_Drivers[DriverId] ),
+    [Total Wins],
+    ,
+    DESC,
+    DENSE
+)
+
+Rank Constructor by Total Wins =
+RANKX (
+    ALLSELECTED ( Dim_Constructors[ConstructorId] ),
+    [Total Wins],
+    ,
+    DESC,
+    DENSE
+)
+
+/* D-14 — use this as a visual-level filter equal to 1 for a dynamic Top 10 driver table. */
+Top 10 Driver Flag =
+IF ( NOT ISBLANK ( [Total Wins] ) && [Rank by Total Wins] <= 10, 1, 0 )
+
+/* D-15 — constructor contribution to points; retains year/date and other dimension filters. */
+Constructor Points Contribution % =
+DIVIDE (
+    [Total Championship Points],
+    CALCULATE ( [Total Championship Points], REMOVEFILTERS ( Dim_Constructors ) )
+)
+
+/* D-16 — calculated column on Dim_Races, not a measure.
+   These are working reporting buckets for analysis. Do not describe them as exact official
+   points-regulation eras without a separate regulatory source and documented verification. */
+/*
+Dim_Races[Reporting Era] =
+VAR Y = Dim_Races[Year]
+RETURN
+    SWITCH (
+        TRUE (),
+        Y <= 1960, "1950–1960",
+        Y <= 1990, "1961–1990",
+        Y <= 2002, "1991–2002",
+        Y <= 2009, "2003–2009",
+        Y <= 2018, "2010–2018",
+        Y <= 2024, "2019–2024",
+        "2025–2026 (partial snapshot)"
+    )
+*/
+
+/* D-17 — dynamic title using the current entity selection and selected date span. */
+Dynamic Report Title =
+VAR ConstructorLabel = SELECTEDVALUE ( Dim_Constructors[ConstructorName], "Multiple / All Constructors" )
+VAR FirstYear = MIN ( Dim_Date[Year] )
+VAR LastYear = MAX ( Dim_Date[Year] )
+VAR YearLabel =
+    IF (
+        ISBLANK ( FirstYear ) || ISBLANK ( LastYear ),
+        "All Years",
+        IF ( FirstYear = LastYear, FORMAT ( FirstYear, "0" ), FORMAT ( FirstYear, "0" ) & "–" & FORMAT ( LastYear, "0" ) )
+    )
+RETURN
+    "Constructor: " & ConstructorLabel & " | " & YearLabel
+
+/* D-18 — normalized qualifying-to-race position conversion index.
+   Requires `ClassifiedFieldSize` from Fact_RaceResults Power Query. Positive values indicate
+   improvement from grid to finish, normalized by classified field size minus one. It is a
+   position-conversion metric, not a points metric; compare only where grid/finish fields exist. */
+Qualifying-to-Race Conversion Index =
+AVERAGEX (
+    FILTER (
+        Fact_RaceResults,
+        NOT ISBLANK ( Fact_RaceResults[gridPositionNumber] )
+            && NOT ISBLANK ( Fact_RaceResults[positionNumber] )
+            && Fact_RaceResults[ClassifiedFieldSize] > 1
+    ),
+    DIVIDE (
+        Fact_RaceResults[gridPositionNumber] - Fact_RaceResults[positionNumber],
+        Fact_RaceResults[ClassifiedFieldSize] - 1
+    )
+)
+
+/* D-19 — race anomaly: a blank-finish-position rate more than 2 population SD above the
+   historical race-level mean. Global baseline removes driver/team/circuit/date filters. */
+Anomalous Race Flag =
+VAR CurrentRaceRate =
+    CALCULATE (
+        [Non-Classified Entry Rate],
+        REMOVEFILTERS ( Dim_Drivers ),
+        REMOVEFILTERS ( Dim_Constructors )
+    )
+VAR RaceRates =
+    CALCULATETABLE (
+        ADDCOLUMNS (
+            ALL ( Dim_Races ),
+            "__RaceRate",
+                CALCULATE (
+                    [Non-Classified Entry Rate],
+                    REMOVEFILTERS ( Dim_Drivers ),
+                    REMOVEFILTERS ( Dim_Constructors )
+                )
+        ),
+        REMOVEFILTERS ( Dim_Date ),
+        REMOVEFILTERS ( Dim_Drivers ),
+        REMOVEFILTERS ( Dim_Constructors ),
+        REMOVEFILTERS ( Dim_Circuits ),
+        REMOVEFILTERS ( Dim_GrandPrix )
+    )
+VAR MeanRate = AVERAGEX ( RaceRates, [__RaceRate] )
+VAR PopulationSD = STDEVX.P ( RaceRates, [__RaceRate] )
+RETURN
+    IF (
+        NOT ISBLANK ( CurrentRaceRate )
+            && CurrentRaceRate > MeanRate + 2 * PopulationSD,
+        1,
+        0
+    )
+
+/* D-20 — longest consecutive constructor championship-winning streak.
+   Requires a single constructor in context. The season filter is removed so the streak is
+   career-long; duplicate standings rows do not inflate streak length because years are DISTINCT. */
+Longest Constructor Championship Win Streak =
+VAR WinningYearsRaw =
+    CALCULATETABLE (
+        SELECTCOLUMNS (
+            FILTER (
+                Fact_SeasonConstructorStandings,
+                Fact_SeasonConstructorStandings[championshipWon] = TRUE ()
+            ),
+            "WonYear", Fact_SeasonConstructorStandings[year]
+        ),
+        REMOVEFILTERS ( Dim_Season )
+    )
+VAR WinningYears = DISTINCT ( WinningYearsRaw )
+VAR WithGroup =
+    ADDCOLUMNS (
+        WinningYears,
+        "__Group",
+            [WonYear] - RANKX ( WinningYears, [WonYear], , ASC, DENSE )
+    )
+VAR StreakGroups =
+    GROUPBY (
+        WithGroup,
+        [__Group],
+        "StreakLength", COUNTX ( CURRENTGROUP (), 1 )
+    )
+RETURN
+    IF ( HASONEVALUE ( Dim_Constructors[ConstructorId] ), MAXX ( StreakGroups, [StreakLength] ) )
+
+/* D-21 — driver season points minus the average points of other drivers who raced for the
+   same constructor in that season. This explicit choice handles mid-season substitutions by
+   comparing against all other drivers recorded for that constructor/year, averaged by driver.
+   Use only when a single driver, constructor and race year are selected. */
+Points Above Average Teammate =
+VAR SelectedYear = SELECTEDVALUE ( Dim_Races[Year] )
+VAR CurrentDriver = SELECTEDVALUE ( Dim_Drivers[DriverId] )
+VAR CurrentConstructor = SELECTEDVALUE ( Dim_Constructors[ConstructorId] )
+VAR TeammateIDs =
+    CALCULATETABLE (
+        SELECTCOLUMNS (
+            VALUES ( Fact_RaceResults[driverId] ),
+            "TeammateId", Fact_RaceResults[driverId]
+        ),
+        REMOVEFILTERS ( Dim_Drivers ),
+        REMOVEFILTERS ( Dim_Date ),
+        FILTER ( ALL ( Dim_Races ), Dim_Races[Year] = SelectedYear ),
+        KEEPFILTERS ( Dim_Constructors[ConstructorId] = CurrentConstructor )
+    )
+VAR OtherTeammates = FILTER ( TeammateIDs, [TeammateId] <> CurrentDriver )
+VAR CurrentDriverSeasonPoints =
+    CALCULATE (
+        [Total Championship Points],
+        REMOVEFILTERS ( Dim_Date ),
+        FILTER ( ALL ( Dim_Races ), Dim_Races[Year] = SelectedYear ),
+        KEEPFILTERS ( Dim_Constructors[ConstructorId] = CurrentConstructor ),
+        KEEPFILTERS ( Dim_Drivers[DriverId] = CurrentDriver )
+    )
+VAR AverageOtherDriverPoints =
+    AVERAGEX (
+        OtherTeammates,
+        VAR ThisTeammateId = [TeammateId]
+        RETURN
+            CALCULATE (
+                [Total Championship Points],
+                REMOVEFILTERS ( Dim_Drivers ),
+                REMOVEFILTERS ( Dim_Date ),
+                FILTER ( ALL ( Dim_Races ), Dim_Races[Year] = SelectedYear ),
+                KEEPFILTERS ( Dim_Constructors[ConstructorId] = CurrentConstructor ),
+                TREATAS ( { ThisTeammateId }, Dim_Drivers[DriverId] )
+            )
+    )
+RETURN
+    IF (
+        NOT ISBLANK ( SelectedYear )
+            && NOT ISBLANK ( CurrentDriver )
+            && NOT ISBLANK ( CurrentConstructor )
+            && COUNTROWS ( OtherTeammates ) > 0,
+        CurrentDriverSeasonPoints - AverageOtherDriverPoints
+    )
+
+/* D-22 — Grand Slam count divided by distinct race wins. */
+Grand Slam Count =
+CALCULATE (
+    COUNTROWS ( Fact_RaceResults ),
+    Fact_RaceResults[grandSlam] = TRUE ()
+)
+
+Grand Slam Rate =
+DIVIDE ( [Grand Slam Count], [Total Wins] )
+
+/* Useful supporting measures */
+Race Events with Result Rows =
+DISTINCTCOUNT ( Fact_RaceResults[raceId] )
+
+Race Events with a Winning Result =
+CALCULATE (
+    DISTINCTCOUNT ( Fact_RaceResults[raceId] ),
+    Fact_RaceResults[positionNumber] = 1
+)
+
+Total Constructors in Directory =
+DISTINCTCOUNT ( Dim_Constructors[ConstructorId] )
+
+Average Pit Stop Time (ms) =
+AVERAGE ( Fact_PitStops[timeMillis] )
+
+Average Pit Stops per Result Entry =
+DIVIDE ( SUM ( Fact_RaceResults[pitStops] ), [Total Race Starts] )

@@ -1,0 +1,24 @@
+```mermaid
+erDiagram
+    DIM_DATE ||--o{ DIM_RACES : "RaceDate"
+    DIM_CIRCUITS ||--o{ DIM_RACES : "CircuitId"
+    DIM_GRANDPRIX ||--o{ DIM_RACES : "GrandPrixId"
+    DIM_RACES ||--o{ FACT_RACERESULTS : "RaceId"
+    DIM_RACES ||--o{ FACT_QUALIFYING : "RaceId"
+    DIM_RACES ||--o{ FACT_FASTESTLAPS : "RaceId"
+    DIM_RACES ||--o{ FACT_PITSTOPS : "RaceId"
+    DIM_DRIVERS ||--o{ FACT_RACERESULTS : "DriverId"
+    DIM_DRIVERS ||--o{ FACT_QUALIFYING : "DriverId"
+    DIM_DRIVERS ||--o{ FACT_FASTESTLAPS : "DriverId"
+    DIM_DRIVERS ||--o{ FACT_PITSTOPS : "DriverId"
+    DIM_DRIVERS ||--o{ FACT_SEASONDRIVERSTANDINGS : "DriverId"
+    DIM_CONSTRUCTORS ||--o{ FACT_RACERESULTS : "ConstructorId"
+    DIM_CONSTRUCTORS ||--o{ FACT_QUALIFYING : "ConstructorId"
+    DIM_CONSTRUCTORS ||--o{ FACT_FASTESTLAPS : "ConstructorId"
+    DIM_CONSTRUCTORS ||--o{ FACT_PITSTOPS : "ConstructorId"
+    DIM_CONSTRUCTORS ||--o{ FACT_SEASONCONSTRUCTORSTANDINGS : "ConstructorId"
+    DIM_SEASON ||--o{ FACT_SEASONDRIVERSTANDINGS : "Year"
+    DIM_SEASON ||--o{ FACT_SEASONCONSTRUCTORSTANDINGS : "Year"
+```
+
+Relationship directions are dimension-to-many-side only. `Dim_Season` is intentionally disconnected from `Dim_Races`; see `docs/DATA_MODEL.md` for the separate season-grain filter path.

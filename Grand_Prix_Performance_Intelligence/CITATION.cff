@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this portfolio case study, cite it as an independent analytics project and preserve F1DB attribution for the data."
+title: "Grand Prix Performance Intelligence"
+authors:
+  - family-names: Salem
+    given-names: Abdulaziz
+abstract: "A Formula 1 analytics portfolio case study with reproducible source-data QA, Power Query M transformations, DAX measures, model documentation and evidence-based findings."
+type: software
